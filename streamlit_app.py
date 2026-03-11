@@ -1,4 +1,5 @@
 import pathlib
+import textwrap
 
 import joblib
 import pandas as pd
@@ -60,239 +61,109 @@ def reset_for_new_prediction():
 
 st.set_page_config(page_title="Credit Churn Predictor", layout="wide")
 
-LIGHT_VARS = {
-    "color-scheme": "light",
-    "--bg": "#f8fafc",
-    "--panel": "#ffffff",
-    "--card": "#f1f5f9",
-    "--accent": "#f59e0b",
-    "--accent-2": "#0284c7",
-    "--text": "#0f172a",
-    "--muted": "#64748b",
-    "--ok": "#16a34a",
-    "--hero": "linear-gradient(120deg, #ffffff 0%, #e2e8f0 60%)",
-    "--app-bg": "radial-gradient(1200px 600px at 10% 0%, #f8fafc, #e2e8f0 60%)",
-    "--field-bg": "#ffffff",
-    "--field-border": "#cbd5e1",
-}
-
-DARK_VARS = {
-    "color-scheme": "dark",
-    "--bg": "#0f1115",
-    "--panel": "#151a21",
-    "--card": "#1b2230",
-    "--accent": "#f59e0b",
-    "--accent-2": "#38bdf8",
-    "--text": "#e5e7eb",
-    "--muted": "#9aa4b2",
-    "--ok": "#22c55e",
-    "--hero": "linear-gradient(120deg, #1b2230 0%, #111827 60%)",
-    "--app-bg": "radial-gradient(1200px 600px at 10% 0%, #1b2230, #0f1115 60%)",
-    "--field-bg": "#111827",
-    "--field-border": "#273244",
-}
-
-
-def _vars_to_css(vars_dict):
-    return "\n".join([f"{k}: {v};" for k, v in vars_dict.items()])
-
-if "theme_mode" not in st.session_state:
-    st.session_state.theme_mode = "Dark"
-
-if st.session_state.theme_mode == "Light":
-    root_css = f":root {{\n{_vars_to_css(LIGHT_VARS)}\n}}"
-else:
-    root_css = f":root {{\n{_vars_to_css(DARK_VARS)}\n}}"
-
 st.markdown(
-    f"""
-    <style>
-    {root_css}
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stAppViewBlockContainer"] {{
-        background: var(--app-bg) !important;
-        color: var(--text) !important;
-    }}
-    html, body {{
-        background: var(--app-bg) !important;
-        color: var(--text) !important;
-    }}
-    [data-testid="stHeader"], [data-testid="stToolbar"] {{ background: transparent !important; }}
-    [data-testid="stSidebar"], [data-testid="stSidebarContent"] {{
-        background: var(--panel) !important;
-        border-right: 1px solid var(--field-border) !important;
-    }}
-    [data-testid="stSidebar"] *, [data-testid="stSidebarContent"] *,
-    [data-testid="stAppViewContainer"] * {{
-        color: var(--text);
-    }}
-    label, p, span, div, h1, h2, h3, h4, h5, h6 {{
-        color: var(--text) !important;
-    }}
-    .hero {{
-        background: var(--hero);
-        border: 1px solid var(--field-border);
-        border-radius: 18px;
-        padding: 24px;
-        margin-bottom: 18px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    }}
-    .hero h1 {{ font-size: 2.2rem; margin-bottom: 6px; }}
-    .hero p {{ color: var(--muted) !important; margin: 0; }}
-    .step-card {{
-        background: var(--card) !important;
-        border: 1px solid var(--field-border) !important;
-        border-radius: 16px;
-        padding: 18px;
-    }}
-    .badge {{
-        display: inline-block;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        background: rgba(56, 189, 248, 0.15);
-        color: var(--accent-2) !important;
-        border: 1px solid rgba(56, 189, 248, 0.35);
-    }}
-    .metric-card {{
-        background: var(--panel) !important;
-        border: 1px solid var(--field-border) !important;
-        border-radius: 14px;
-        padding: 14px 16px;
-    }}
-    .result-card {{
-        background: var(--panel) !important;
-        border: 1px solid var(--field-border) !important;
-        border-radius: 16px;
-        padding: 18px 20px;
-    }}
-    .result-title {{
-        font-size: 1.6rem;
-        margin: 0;
-    }}
-    .result-sub {{
-        color: var(--muted) !important;
-        margin: 4px 0 10px 0;
-    }}
-    .pill {{
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 999px;
-        padding: 4px 10px;
-        font-size: 0.8rem;
-        border: 1px solid var(--field-border);
-        color: var(--muted) !important;
-        background: var(--card) !important;
-    }}
-    .score-grid {{
-        display: grid;
-        grid-template-columns: 1fr 140px;
-        gap: 16px;
-        align-items: center;
-        margin-top: 12px;
-    }}
-    .score-box {{
-        border: 1px solid var(--field-border);
-        border-radius: 12px;
-        padding: 10px 12px;
-        text-align: center;
-        background: var(--card) !important;
-    }}
-    .score-box strong {{
-        font-size: 1.2rem;
-    }}
-    .cta {{
-        background: linear-gradient(90deg, #f59e0b, #f97316);
-        color: #0b0b0b !important;
-        border-radius: 12px;
-        padding: 10px 16px;
-        font-weight: 600;
-    }}
-    .stButton>button, 
-    .stFormSubmitButton>button, 
-    [data-testid="baseButton-secondary"], 
-    [data-testid="baseButton-primary"],
-    [data-testid="baseButton-secondaryFormSubmit"],
-    button[kind="secondaryFormSubmit"],
-    button[kind="primaryFormSubmit"],
-    button[kind="primary"],
-    button {{
-        background: linear-gradient(90deg, #f59e0b, #f97316) !important;
-        background-image: linear-gradient(90deg, #f59e0b, #f97316) !important;
-        color: #ffffff !important;
-        border-radius: 12px !important;
-        border: 0 !important;
-        padding: 0.6rem 1rem !important;
-        font-weight: 600 !important;
-    }}
-    .modal-actions {{
-        display: flex;
-        gap: 12px;
-        margin-top: 16px;
-        justify-content: flex-end;
-    }}
-    .modal-actions .stButton>button {{
-        min-width: 140px;
-    }}
-    .stTextInput>div>div>input,
-    .stNumberInput input,
-    .stSelectbox>div>div>div,
-    div[data-baseweb="select"] > div,
-    div[data-baseweb="input"] > div,
-    input[type="number"],
-    input[type="text"] {{
-        background-color: var(--field-bg) !important;
-        border: 1px solid var(--field-border) !important;
-        color: var(--text) !important;
-        border-radius: 10px !important;
-    }}
-    div[data-baseweb="input"] button,
-    div[data-testid="stNumberInputContainer"] button,
-    [data-testid="stNumberInputStepDown"],
-    [data-testid="stNumberInputStepUp"] {{
-        background-color: transparent !important;
-        color: var(--text) !important;
-    }}
-    div[data-baseweb="input"] input {{
-        color: var(--text) !important;
-        background-color: transparent !important;
-    }}
-    div[data-baseweb="select"] span {{
-        color: var(--text) !important;
-    }}
-    /* Dropdown menu background fix */
-    div[role="listbox"], ul[role="listbox"] {{
-        background-color: var(--panel) !important;
-    }}
-    li[role="option"] {{
-        background-color: transparent !important;
-        color: var(--text) !important;
-    }}
-    .sidebar-title {{ font-weight: 700; letter-spacing: 0.5px; }}
-    .progress {{
-        height: 8px;
-        background-color: var(--field-bg) !important;
-        border-radius: 999px;
-        overflow: hidden;
-        border: 1px solid var(--field-border);
-    }}
-    .progress > div {{
-        height: 100%;
-        background: linear-gradient(90deg, #38bdf8, #22c55e);
-    }}
-    </style>
-    """,
+    textwrap.dedent(
+        """
+        <style>
+        [data-testid="stHeader"], [data-testid="stToolbar"] { background: transparent; }
+        .hero {
+            background: linear-gradient(120deg, rgba(59, 130, 246, 0.18), rgba(15, 23, 42, 0.2));
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+        .hero h1 { font-size: 2.2rem; margin-bottom: 6px; }
+        .step-card {
+            background: var(--secondary-background-color);
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            border-radius: 16px;
+            padding: 18px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary-color);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+        .metric-card {
+            background: var(--secondary-background-color);
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        .result-card {
+            background: var(--secondary-background-color);
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            border-radius: 16px;
+            padding: 18px 20px;
+        }
+        .result-title { font-size: 1.6rem; margin: 0; }
+        .result-sub { color: var(--text-color); opacity: 0.75; margin: 4px 0 10px 0; }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            color: var(--text-color);
+            background: rgba(15, 23, 42, 0.12);
+        }
+        .score-grid {
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            gap: 16px;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .score-box {
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            border-radius: 12px;
+            padding: 10px 12px;
+            text-align: center;
+            background: rgba(15, 23, 42, 0.12);
+        }
+        .score-box strong { font-size: 1.2rem; }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            justify-content: flex-end;
+        }
+        .progress {
+            height: 8px;
+            background: rgba(100, 116, 139, 0.2);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+        .progress > div {
+            height: 100%;
+            background: var(--primary-color);
+        }
+        .sidebar-title { font-weight: 700; letter-spacing: 0.5px; }
+        </style>
+        """
+    ),
     unsafe_allow_html=True,
 )
 
 st.markdown(
-    """
-    <div class="hero">
-      <div class="badge">Guided Flow</div>
-      <h1>Credit Churn Predictor</h1>
-      <p>Step-by-step input, instant prediction, and clear risk signal.</p>
-    </div>
-    """,
+    textwrap.dedent(
+        """
+        <div class="hero">
+          <div class="badge">Guided Flow</div>
+          <h1>Credit Churn Predictor</h1>
+          <p>Step-by-step input, instant prediction, and clear risk signal.</p>
+        </div>
+        """
+    ),
     unsafe_allow_html=True,
 )
 
@@ -326,14 +197,6 @@ if "nav_step_widget" not in st.session_state:
     st.session_state.nav_step_widget = steps[st.session_state.step - 1]
 
 with st.sidebar:
-    if st.session_state.theme_mode not in ("Dark", "Light"):
-        st.session_state.theme_mode = "Dark"
-    theme_mode = st.selectbox(
-        "Theme",
-        ["Dark", "Light"],
-        index=["Dark", "Light"].index(st.session_state.theme_mode),
-    )
-    st.session_state.theme_mode = theme_mode
     st.markdown("<div class='sidebar-title'>Navigation</div>", unsafe_allow_html=True)
     step_choice = st.radio("Go to step", steps, key="nav_step_widget")
     if step_choice != steps[st.session_state.step - 1]:
